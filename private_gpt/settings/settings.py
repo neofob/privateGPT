@@ -98,6 +98,9 @@ class LLMSettings(BaseModel):
         "like `HuggingFaceH4/zephyr-7b-beta`. If not set, will load a tokenizer matching "
         "gpt-3.5-turbo LLM.",
     )
+    n_gpu_layers: int = Field(
+            -1,
+            description="Number of layers to offload to GPU. -1 to offload all",)
 
 
 class VectorstoreSettings(BaseModel):
