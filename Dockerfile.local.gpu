@@ -1,0 +1,83 @@
+FROM nvidia/cuda:12.3.1-devel-ubuntu22.04 as base
+
+# For tzdata
+ENV DEBIAN_FRONTEND="noninteractive" TZ="Etc/UTC"
+
+# Install Python 3.11 and set it as default
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.11 python3.11-venv python3-pip && \
+    ln -sf /usr/bin/python3.11 /usr/bin/python3 && \
+    python3 --version
+
+# Install poetry
+RUN pip install pipx
+RUN python3 -m pipx ensurepath
+RUN pipx install poetry
+ENV PATH="/root/.local/bin:$PATH"
+ENV PATH=".venv/bin/:$PATH"
+
+# Dependencies to build llama-cpp
+RUN apt update && apt install -y \
+  libopenblas-dev\
+  ninja-build\
+  build-essential\
+  pkg-config\
+  wget\
+  gcc
+
+# https://python-poetry.org/docs/configuration/#virtualenvsin-project
+ENV POETRY_VIRTUALENVS_IN_PROJECT=true
+
+#########################
+FROM base as dependencies
+#########################
+
+ARG LLAMA_CPP_PYTHON_VERSION=0.2.50
+WORKDIR /home/worker/app
+COPY pyproject.toml ./
+
+RUN poetry config installer.max-workers 4
+RUN poetry install --with local
+RUN poetry install --with ui
+
+# Enable GPU support
+ENV LLAMA_CUBLAS=1
+# Use this if your GPU performs better at FP32 than FP16
+# CMAKE_ARGS="-DLLAMA_CUBLAS=on -DLLAMA_CUDA_FORCE_MMQ=on"
+RUN CMAKE_ARGS='-DLLAMA_CUBLAS=on -DLLAMA_CUDA_FORCE_MMQ=on' FORCE_CMAKE=1 poetry run pip install --upgrade --force-reinstall --no-cache-dir llama-cpp-python==${LLAMA_CPP_PYTHON_VERSION}
+
+################
+FROM base as app
+################
+
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8080
+EXPOSE 8080
+
+# Prepare a non-root user
+RUN adduser worker
+WORKDIR /home/worker/app
+
+RUN mkdir -p local_data; chown -R worker local_data
+RUN mkdir -p models; chown -R worker models
+COPY --chown=worker --from=dependencies /home/worker/app/.venv/ .venv
+COPY --chown=worker private_gpt/ private_gpt
+COPY --chown=worker fern/ fern
+COPY --chown=worker *.yaml *.md ./
+COPY --chown=worker scripts/ scripts
+COPY --chown=worker pyproject.toml ./
+
+# Copy the entry point script into the container and make it executable
+# TODO: factorize entrypoint.sh from lukaboljevic/privateGPT
+# 1. setup
+# 2. ingest
+# 3. run
+#COPY --chown=worker entrypoint.sh /entrypoint.sh
+#RUN chmod +x /entrypoint.sh
+
+ENV PYTHONPATH="$PYTHONPATH:/home/worker/app/private_gpt/"
+
+ENTRYPOINT ["/home/worker/app/.venv/bin/python", "-m" , "private_gpt"]

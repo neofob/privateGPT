@@ -40,7 +40,7 @@ llm:
   max_new_tokens: 4096
   context_window: 4096
   tokenizer: mistralai/Mixtral-8x7B-Instruct-v0.1
-  n_gpu_layers: 20
+  n_gpu_layers: -1
 
 embedding:
   # Should be matching the value above in most cases
@@ -64,7 +64,7 @@ pgvector:
   table_name: embeddings
 
 local:
-  prompt_style: "llama2"
+  prompt_style: "mistral"
   llm_hf_repo_id: TheBloke/Mixtral-8x7B-Instruct-v0.1-GGUF
   llm_hf_model_file: mixtral-8x7b-instruct-v0.1.Q6_K.gguf
   embedding_hf_model_name: jinaai/jina-embeddings-v2-base-en

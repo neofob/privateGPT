@@ -1,0 +1,27 @@
+---
+version: '3.7'
+
+services:
+  private-gpt-gpu:
+    container_name: privategpt-gpu
+    hostname: privategpt-gpu
+    image: neofob/privategpt:gpu
+    volumes:
+      - ./local_data/:/home/worker/app/local_data
+      - ./models/:/home/worker/app/models
+      - ./settings.yaml:/home/worker/app/settings.yaml:ro
+    entrypoint: ["/home/worker/app/.venv/bin/python", "-m" , "private_gpt"]
+    #entrypoint: ["tail", "-f", "/dev/null"]
+    ports:
+      - 8001:8080
+    environment:
+      PORT: 8080
+      PGPT_PROFILES: default
+      PGPT_MODE: local
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 2
+              capabilities: [gpu]
