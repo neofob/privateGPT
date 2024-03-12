@@ -35,7 +35,7 @@ ENV POETRY_VIRTUALENVS_IN_PROJECT=true
 FROM base as dependencies
 #########################
 
-ARG LLAMA_CPP_PYTHON_VERSION=0.2.50
+ARG LLAMA_CPP_PYTHON_VERSION=0.2.56
 WORKDIR /home/worker/app
 COPY pyproject.toml ./
 
