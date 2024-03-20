@@ -1,4 +1,5 @@
 ---
+# time docker-compose -f docker-compose-gpu.yaml build
 version: '3.7'
 
 services:
@@ -6,6 +7,11 @@ services:
     container_name: privategpt-gpu
     hostname: privategpt-gpu
     image: neofob/privategpt:gpu
+    build:
+      context: .
+      dockerfile: ./Dockerfile.local.gpu
+      args:
+        - LLAMA_CPP_PYTHON_VERSION=0.2.57
     volumes:
       - ./local_data/:/home/worker/app/local_data
       - ./models/:/home/worker/app/models
@@ -18,6 +24,7 @@ services:
       PORT: 8080
       PGPT_PROFILES: default
       PGPT_MODE: local
+      GPU_LAYERS: -1
     deploy:
       resources:
         reservations:
