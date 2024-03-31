@@ -11,7 +11,7 @@ services:
       context: .
       dockerfile: ./Dockerfile.local.gpu
       args:
-        - LLAMA_CPP_PYTHON_VERSION=0.2.57
+        - LLAMA_CPP_PYTHON_VERSION=0.2.56
     volumes:
       - ./local_data/:/home/worker/app/local_data
       - ./models/:/home/worker/app/models
