@@ -35,7 +35,9 @@ ENV POETRY_VIRTUALENVS_IN_PROJECT=true
 FROM base AS dependencies
 #########################
 
-ARG LLAMA_CPP_PYTHON_VERSION=0.2.56
+ARG LLAMA_CPP_PYTHON_VERSION=0.2.60
+ARG CMAKE_ARGS='-DLLAMA_CUBLAS=on -DLLAMA_CUDA_FORCE_MMQ=on'
+
 WORKDIR /home/worker/app
 COPY pyproject.toml ./
 
@@ -47,7 +49,7 @@ RUN poetry install --with ui
 ENV LLAMA_CUBLAS=1
 # Use this if your GPU performs better at FP32 than FP16
 # CMAKE_ARGS="-DLLAMA_CUBLAS=on -DLLAMA_CUDA_FORCE_MMQ=on"
-RUN CMAKE_ARGS='-DLLAMA_CUBLAS=on -DLLAMA_CUDA_FORCE_MMQ=on' FORCE_CMAKE=1 poetry run pip install --upgrade --force-reinstall --no-cache-dir llama-cpp-python==${LLAMA_CPP_PYTHON_VERSION}
+RUN CMAKE_ARGS=${CMAKE_ARGS} FORCE_CMAKE=1 poetry run pip install --upgrade --force-reinstall --no-cache-dir llama-cpp-python==${LLAMA_CPP_PYTHON_VERSION}
 
 ################
 FROM nvcr.io/nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu22.04 AS app
@@ -55,6 +57,10 @@ FROM nvcr.io/nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu22.04 AS app
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Etc/UTC"
 # Install Python 3.11 and set it AS default
+# This is let us know at runtime how llama_cpp_python was compiled
+# Make sure it is the same as the dependencies stage
+ENV CMAKE_ARGS=${CMAKE_ARGS}
+ENV LLAMA_CPP_PYTHON_VERSION=${LLAMA_CPP_PYTHON_VERSION}
 RUN apt-get update && \
     apt-get install -y software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa && \
