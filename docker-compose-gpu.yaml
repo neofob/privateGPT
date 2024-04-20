@@ -1,6 +1,5 @@
 ---
 # time docker-compose -f docker-compose-gpu.yaml build
-version: '3.7'
 
 services:
   private-gpt-gpu:
@@ -11,7 +10,8 @@ services:
       context: .
       dockerfile: ./Dockerfile.local.gpu
       args:
-        - LLAMA_CPP_PYTHON_VERSION=0.2.56
+        - LLAMA_CPP_PYTHON_VERSION=0.2.63
+        - CMAKE_ARGS='-LLAMA_CUDA=on -DLLAMA_CUDA_FORCE_MMQ=on'
     volumes:
       - ./local_data/:/home/worker/app/local_data
       - ./models/:/home/worker/app/models
