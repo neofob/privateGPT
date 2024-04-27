@@ -1,0 +1,33 @@
+---
+services:
+  private-gpt-gpu:
+    container_name: privategpt-gpu
+    hostname: privategpt-gpu
+    image: neofob/privategpt:gpu-code
+    build:
+      context: .
+      dockerfile: ./Dockerfile.local.gpu
+      args:
+        - LLAMA_CPP_PYTHON_VERSION=0.2.65
+        - CMAKE_ARGS='-LLAMA_CUDA=on -DLLAMA_CUDA_FORCE_MMQ=on'
+    volumes:
+      - ./local_data.tp_code_jina/:/home/worker/app/local_data
+      - ./models.code/:/home/worker/app/models
+      - ./settings-codellama-70b.yaml:/home/worker/app/settings.yaml:ro
+    entrypoint: ["/home/worker/app/.venv/bin/python", "-m" , "private_gpt"]
+    #entrypoint: ["tail", "-f", "/dev/null"]
+    ports:
+      - 8001:8080
+    environment:
+      PORT: 8080
+      PGPT_PROFILES: default
+      PGPT_MODE: local
+      GPU_LAYERS: 78
+      CUDA_VISIBLE_DEVICES: "0,1,2"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 3
+              capabilities: [gpu]

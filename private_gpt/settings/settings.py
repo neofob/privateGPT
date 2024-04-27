@@ -113,14 +113,19 @@ class LocalSettings(BaseModel):
     embedding_hf_model_name: str = Field(
         description="Name of the HuggingFace model to use for embeddings"
     )
-    prompt_style: Literal["default", "llama2", "tag", "mistral", "chatml"] = Field(
+    prompt_style: Literal["default", "llama2", "tag", "mistral", "codellama", "chatml"] = Field(
         "llama2",
         description=(
             "The prompt style to use for the chat engine. "
             "If `default` - use the default prompt style from the llama_index. It should look like `role: message`.\n"
             "If `llama2` - use the llama2 prompt style from the llama_index. Based on `<s>`, `[INST]` and `<<SYS>>`.\n"
             "If `tag` - use the `tag` prompt style. It should look like `<|role|>: message`. \n"
-            "If `mistral` - use the `mistral prompt style. It shoudl look like <s>[INST] {System Prompt} [/INST]</s>[INST] { UserInstructions } [/INST]"
+            "If `mistral` - use the `mistral prompt style. It should look like <s>[INST] {System Prompt} [/INST]</s>[INST] { UserInstructions } [/INST]"
+            "`codellama` - use `codellama` prompt style. `Source: system \
+            {system_message}<step> \
+            Source: user \
+            {prompt} <step> \
+            Source: assistant` \n"
             "`llama2` is the historic behaviour. `default` might work better with your custom models."
         ),
     )

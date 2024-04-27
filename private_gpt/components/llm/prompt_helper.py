@@ -143,6 +143,32 @@ class MistralPromptStyle(AbstractPromptStyle):
             [ChatMessage(content=completion, role=MessageRole.USER)]
         )
 
+class CodeLlamaPromptStyle(AbstractPromptStyle):
+    def _messages_to_prompt(self, messages: Sequence[ChatMessage]) -> str:
+        prompt = "<s>"
+        for message in messages:
+            role = message.role.lower()
+            content = message.content or ""
+            if role == "user":
+                prompt += f"Source: {role}\n\n "
+                prompt += f"{content.strip()}"
+                prompt += " <step> "
+            elif role == "assistant":
+                prompt += f"Source: {role}\n"
+                prompt += f"{content.strip()}"
+                prompt += " <step> "
+            elif role == "system":
+                prompt += f"Source: {role}\n\n"
+                prompt += f"{content.strip()}"
+                prompt += " <step> "
+
+        prompt += "Source: assistant\nDestination: user\n\n "
+        return prompt
+
+    def _completion_to_prompt(self, completion: str) -> str:
+        return self._messages_to_prompt(
+            [ChatMessage(content=completion, role=MessageRole.USER)]
+        )
 
 class ChatMLPromptStyle(AbstractPromptStyle):
     def _messages_to_prompt(self, messages: Sequence[ChatMessage]) -> str:
@@ -168,10 +194,11 @@ class ChatMLPromptStyle(AbstractPromptStyle):
 PROMPT_STYLE_CLS_MAP = {
     None: DefaultPromptStyle,
     "default": DefaultPromptStyle,
-    "llama2": Llama2PromptStyle,
-    "tag": TagPromptStyle,
-    "mistral": MistralPromptStyle,
     "chatml": ChatMLPromptStyle,
+    "codellama": CodeLlamaPromptStyle,
+    "llama2": Llama2PromptStyle,
+    "mistral": MistralPromptStyle,
+    "tag": TagPromptStyle,
 }
 
 def get_prompt_style(prompt_style: str | None) -> AbstractPromptStyle:
