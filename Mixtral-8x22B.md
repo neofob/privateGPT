@@ -29,7 +29,8 @@ make -j0
 cd ~/src
 GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/MaziyarPanahi/Mixtral-8x22B-Instruct-v0.1-GGUF
 cd Mixtral-8x22B-Instruct-v0.1-GGUF
-huggingface-cli download --resume-download MaziyarPanahi/Mixtral-8x22B-Instruct-v0.1-GGUF *.Q6-*.gguf  --local-dir . --local-dir-use-symlink False
+huggingface-cli download --resume-download MaziyarPanahi/Mixtral-8x22B-Instruct-v0.1-GGUF *.Q6-*.gguf \
+--local-dir . --local-dir-use-symlink False
 
 ### Merge the files
 /path/to/gguf-split --merge Mixtral-8x22B-Instruct-v0.1.Q6-00001-of-00004.gguf Mixtral-8x22B-Instruct-v0.1.Q6.gguf
