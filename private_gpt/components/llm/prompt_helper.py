@@ -149,19 +149,9 @@ class CodeLlamaPromptStyle(AbstractPromptStyle):
         for message in messages:
             role = message.role.lower()
             content = message.content or ""
-            if role == "user":
-                prompt += f"Source: {role}\n\n "
-                prompt += f"{content.strip()}"
-                prompt += " <step> "
-            elif role == "assistant":
-                prompt += f"Source: {role}\n"
-                prompt += f"{content.strip()}"
-                prompt += " <step> "
-            elif role == "system":
-                prompt += f"Source: {role}\n\n"
-                prompt += f"{content.strip()}"
-                prompt += " <step> "
-
+            prompt += f"Source: {role}\n\n "
+            prompt += f"{content.strip()}"
+            prompt += " <step> "
         prompt += "Source: assistant\nDestination: user\n\n "
         return prompt
 

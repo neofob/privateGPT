@@ -8,7 +8,7 @@ services:
       context: .
       dockerfile: ./Dockerfile.local.gpu
       args:
-        - LLAMA_CPP_PYTHON_VERSION=0.2.65
+        - LLAMA_CPP_PYTHON_VERSION=0.2.74
         - CMAKE_ARGS='-LLAMA_CUDA=on -DLLAMA_CUDA_FORCE_MMQ=on'
     volumes:
       - ./local_data.tp_code_jina/:/home/worker/app/local_data
@@ -23,7 +23,7 @@ services:
       PGPT_PROFILES: default
       PGPT_MODE: local
       GPU_LAYERS: 78
-      CUDA_VISIBLE_DEVICES: "0,1,2"
+      CUDA_VISIBLE_DEVICES: "2,1,0"
     deploy:
       resources:
         reservations:

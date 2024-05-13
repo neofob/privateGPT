@@ -10,8 +10,8 @@ services:
       context: .
       dockerfile: ./Dockerfile.local.gpu
       args:
-        - LLAMA_CPP_PYTHON_VERSION=0.2.65
-        - CMAKE_ARGS='-LLAMA_CUDA=on -DLLAMA_CUDA_FORCE_MMQ=on'
+        - LLAMA_CPP_PYTHON_VERSION=0.2.74
+        - CMAKE_ARGS='-DLLAMA_CUDA=on -DLLAMA_CUDA_FORCE_MMQ=on'
     volumes:
       - ./local_data/:/home/worker/app/local_data
       - ./models/:/home/worker/app/models
@@ -24,12 +24,12 @@ services:
       PORT: 8080
       PGPT_PROFILES: default
       PGPT_MODE: local
-      GPU_LAYERS: -1
-      CUDA_VISIBLE_DEVICES: "0,1"
+      GPU_LAYERS: 16
+      CUDA_VISIBLE_DEVICES: "0"
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
-              count: 2
+              count: 1
               capabilities: [gpu]
