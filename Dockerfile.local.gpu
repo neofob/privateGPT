@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/cuda:12.4.1-devel-ubuntu22.04 AS base
+FROM nvcr.io/nvidia/cuda:12.5.0-devel-ubuntu22.04 AS base
 
 # For tzdata
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Etc/UTC"
@@ -38,7 +38,7 @@ FROM base AS dependencies
 #########################
 
 ARG LLAMA_CPP_PYTHON_VERSION=0.2.63
-ARG CMAKE_ARGS='-DLLAMA_CUDA=on -DLLAMA_CUDA_FORCE_MMQ=on'
+ARG CMAKE_ARGS=-DLLAMA_CUDA=on -DLLAMA_CUDA_FORCE_MMQ
 
 WORKDIR /home/worker/app
 COPY pyproject.toml ./
@@ -49,14 +49,14 @@ RUN poetry install --with ui
 
 # Enable GPU support
 # Use this if your GPU performs better at FP32 than FP16
-# CMAKE_ARGS="-DLLAMA_CUDA=on -DLLAMA_CUDA_FORCE_MMQ=on"
+# CMAKE_ARGS=-DLLAMA_CUDA=on -DLLAMA_CUDA_FORCE_MMQ=on
 RUN rm -f CMakeCache.txt && CMAKE_ARGS=${CMAKE_ARGS} FORCE_CMAKE=1 poetry run pip install --upgrade --force-reinstall --no-cache-dir llama-cpp-python==${LLAMA_CPP_PYTHON_VERSION}
 
 ################
-FROM nvcr.io/nvidia/cuda:12.4.1-runtime-ubuntu22.04 AS app
+FROM nvcr.io/nvidia/cuda:12.5.0-runtime-ubuntu22.04 AS app
 ################
 ARG LLAMA_CPP_PYTHON_VERSION=0.2.63
-ARG CMAKE_ARGS='-DLLAMA_CUDA=on -DLLAMA_CUDA_FORCE_MMQ=on'
+ARG CMAKE_ARGS=-DLLAMA_CUDA=on -DLLAMA_CUDA_FORCE_MMQ=on
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Etc/UTC"
 RUN sed -i "s/archive/us.archive/g" /etc/apt/sources.list

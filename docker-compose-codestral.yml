@@ -1,0 +1,48 @@
+---
+#
+# time docker-compose -f docker-compose-codestral.yaml build
+#
+# Merge sharded files from huggingface
+# gguf-split util from https://github.com/ggerganov/llama.cpp
+# git clone https://github.com/ggerganov/llama.cpp
+# cd llama.cpp
+# make -j0
+# gguf-split is here
+#
+# GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/MaziyarPanahi/Mixtral-8x22B-Instruct-v0.1-GGUF
+# cd Mixtral-8x22B-Instruct-v0.1-GGUF
+# huggingface-cli download --resume-download MaziyarPanahi/Mixtral-8x22B-Instruct-v0.1-GGUF *.Q6-*.gguf  --local-dir . --local-dir-use-symlink False
+# /path/to/gguf-split --merge Mixtral-8x22B-Instruct-v0.1.Q6-00001-of-00004.gguf Mixtral-8x22B-Instruct-v0.1.Q6.gguf
+# ~ 2.1 GB / layer for 6b quantization
+services:
+  private-gpt-gpu:
+    container_name: privategpt-gpu
+    hostname: privategpt-gpu
+    image: neofob/privategpt:codestral
+    build:
+      context: .
+      dockerfile: ./Dockerfile.local.gpu
+      args:
+        - LLAMA_CPP_PYTHON_VERSION=0.2.78
+        - CMAKE_ARGS=-DLLAMA_CUDA=ON -DLLAMA_CUDA_FORCE_MMQ=ON
+    volumes:
+      - ./local_data.tp_codestral/:/home/worker/app/local_data
+      - ./models.codestral/:/home/worker/app/models
+      - ./settings-codestral.yaml:/home/worker/app/settings.yaml:ro
+    entrypoint: ["/home/worker/app/.venv/bin/python", "-m" , "private_gpt"]
+    #entrypoint: ["tail", "-f", "/dev/null"]
+    ports:
+      - 8001:8080
+    environment:
+      PORT: 8080
+      PGPT_PROFILES: default
+      PGPT_MODE: local
+      GPU_LAYERS: 57
+      #CUDA_VISIBLE_DEVICES: "0,1"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 2
+              capabilities: [gpu]
